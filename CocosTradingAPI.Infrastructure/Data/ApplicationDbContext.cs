@@ -1,5 +1,7 @@
 using CocosTradingAPI.Domain.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using CocosTradingAPI.Domain.Enums;
 
 namespace CocosTradingAPI.Infrastructure.Data
 {
@@ -11,11 +13,21 @@ namespace CocosTradingAPI.Infrastructure.Data
         public DbSet<Instrument> Instruments { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<MarketData> MarketData { get; set; }
+    
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            var stringConverter = new EnumToStringConverter<OrderStatus>();
             modelBuilder.Entity<Order>()
-                .Property(o => o.Price)
-                .IsRequired(false);
+                .Property(o => o.Status)
+                .HasConversion(stringConverter);
+
+            modelBuilder.Entity<Order>()
+                .Property(o => o.Side)
+                .HasConversion(new EnumToStringConverter<OrderSide>());
+
+            modelBuilder.Entity<Instrument>()
+                .Property(i => i.Type)
+                .HasConversion(new EnumToStringConverter<InstrumentType>());
         }
     }
 }

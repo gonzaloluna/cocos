@@ -1,4 +1,7 @@
+using CocosTradingAPI.Application.Interfaces;
+using CocosTradingAPI.Application.Services;
 using CocosTradingAPI.Infrastructure.Data;
+using CocosTradingAPI.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace CocosTradingAPI.WebAPI
@@ -18,6 +21,11 @@ namespace CocosTradingAPI.WebAPI
                 options.UseNpgsql(_configuration.GetConnectionString("DefaultConnection")));
 
             services.AddControllers();
+
+            services.AddScoped<IInstrumentRepository, InstrumentRepository>();
+            services.AddScoped<IPortfolioService, PortfolioService>();
+            services.AddScoped<IOrderRepository, OrderRepository>();
+            services.AddScoped<IMarketDataRepository, MarketDataRepository>();
 
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen();

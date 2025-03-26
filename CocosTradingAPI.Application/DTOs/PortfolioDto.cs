@@ -1,9 +1,11 @@
 namespace CocosTradingAPI.Application.DTOs
 {
-    public class PortfolioResponse
+    public class PortfolioDto
     {
         public decimal TotalValue { get; set; }
         public decimal AvailableCash { get; set; }
-        public List<PositionDto> Positions { get; set; } = new List<PositionDto>();
+        public List<AssetPositionDto> Positions { get; set; } = new();
     }
+
+  
 }
