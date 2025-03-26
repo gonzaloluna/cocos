@@ -7,5 +7,6 @@
         public int Quantity { get; set; }
         public decimal TotalValue { get; set; }
         public decimal ReturnPercentage { get; set; }
+        public decimal Cost { get; set; } 
     }
 }

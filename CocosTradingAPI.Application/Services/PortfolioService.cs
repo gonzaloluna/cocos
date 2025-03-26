@@ -1,87 +1,47 @@
-using CocosTradingAPI.Application.DTOs;
-using CocosTradingAPI.Application.Interfaces;
-using CocosTradingAPI.Domain.Enums;
-using CocosTradingAPI.Domain.Models;
-
 namespace CocosTradingAPI.Application.Services
 {
+    using CocosTradingAPI.Application.DTOs;
+    using CocosTradingAPI.Application.Interfaces;
+    using CocosTradingAPI.Domain.Models;
+    using Microsoft.Extensions.Logging;
+
     public class PortfolioService : IPortfolioService
     {
         private readonly IOrderRepository _orderRepo;
-        private readonly IMarketDataRepository _marketDataRepo;
+        private readonly IMarketDataRepository _marketRepo;
+        private readonly IPortfolioCalculator _portfolioCalculator;
+        private readonly ILoggerFactory _loggerFactory;
 
-        public PortfolioService(IOrderRepository orderRepo, IMarketDataRepository marketDataRepo)
+        public PortfolioService(
+            IOrderRepository orderRepo,
+            IMarketDataRepository marketRepo,
+            IPortfolioCalculator portfolioCalculator,
+            ILoggerFactory loggerFactory)
         {
             _orderRepo = orderRepo;
-            _marketDataRepo = marketDataRepo;
+            _marketRepo = marketRepo;
+            _portfolioCalculator = portfolioCalculator;
+            _loggerFactory = loggerFactory;
         }
 
         public async Task<PortfolioDto> GetPortfolioAsync(int userId)
         {
             var orders = await _orderRepo.GetFilledOrdersByUserAsync(userId);
 
-            var positions = new Dictionary<int, AssetPositionDto>();
-            decimal availableCash = 0;
+            var instrumentIds = orders.Select(o => o.InstrumentId).Distinct().ToList();
+            var marketDataList = await _marketRepo.GetLatestForInstrumentsAsync(instrumentIds);
+            var marketDataDict = marketDataList.ToDictionary(m => m.InstrumentId);
 
-            foreach (var order in orders)
-            {
-                if (order.Instrument.Type == InstrumentType.MONEDA)
-                {
-                    if (order.Side == OrderSide.CASH_IN) availableCash += order.Size;
-                    else if (order.Side == OrderSide.CASH_OUT) availableCash -= order.Size;
-                }
-                else
-                {
-                    if (!positions.ContainsKey(order.InstrumentId))
-                    {
-                        positions[order.InstrumentId] = new AssetPositionDto
-                        {
-                            Ticker = order.Instrument.Ticker,
-                            Name = order.Instrument.Name,
-                            Quantity = 0,
-                            TotalValue = 0
-                        };
-                    }
+            var strategyBuilder = new OrderProcessingStrategyBuilder(marketDataDict, _loggerFactory);
+            var strategies = strategyBuilder.Build();
 
-                    var pos = positions[order.InstrumentId];
-
-                    if (order.Side == OrderSide.BUY)
-                    {
-                        pos.Quantity += order.Size;
-                        pos.TotalValue += order.Size * order.Price;
-                    }
-                    else if (order.Side == OrderSide.SELL)
-                    {
-                        pos.Quantity -= order.Size;
-                        pos.TotalValue -= order.Size * order.Price;
-                    }
-                }
-            }
-
-            foreach (var kv in positions.ToList())
-            {
-                var pos = kv.Value;
-                var market = await _marketDataRepo.GetLatestForInstrumentAsync(kv.Key);
-
-                if (market != null && pos.Quantity > 0)
-                {
-                    var marketValue = pos.Quantity * market.Close;
-                    var cost = pos.TotalValue;
-
-                    pos.TotalValue = marketValue;
-                    pos.ReturnPercentage = cost > 0 ? ((marketValue - cost) / cost) * 100 : 0;
-                }
-                else //TODO: a definir que sucede si no hay datos de mercado para un instrumento. Simplemente no lo listamos
-                {
-                    positions.Remove(kv.Key); 
-                }
-            }
+            var context = _portfolioCalculator.Calculate(orders, strategies);
 
             return new PortfolioDto
             {
-                AvailableCash = availableCash,
-                Positions = positions.Values.ToList(),
-                TotalValue = availableCash + positions.Values.Sum(p => p.TotalValue)
+                AvailableCash = context.AvailableCash,
+                Positions = context.Positions.Values.ToList(),
+                TotalValue = context.AvailableCash + context.Positions.Values.Sum(p => p.TotalValue)
             };
         }
     }

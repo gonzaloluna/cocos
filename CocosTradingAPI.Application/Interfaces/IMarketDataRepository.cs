@@ -4,6 +4,6 @@ namespace CocosTradingAPI.Application.Interfaces
 {
     public interface IMarketDataRepository
     {
-        Task<MarketData?> GetLatestForInstrumentAsync(int instrumentId);
+        Task<List<MarketData>> GetLatestForInstrumentsAsync(IEnumerable<int> instrumentIds);
     }
 }

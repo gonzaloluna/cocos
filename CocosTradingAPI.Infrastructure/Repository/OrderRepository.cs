@@ -19,7 +19,7 @@ namespace CocosTradingAPI.Infrastructure.Repositories
         {
             return await _context.Orders
                 .Include(o => o.Instrument)
-                .Where(o => o.UserId == userId && o.Status == OrderStatus.FILLED)
+                .Where(o => o.UserId == userId && o.Status == OrderStatus.FILLED).OrderBy(o => o.DateTime)
                 .ToListAsync();
         }
     }

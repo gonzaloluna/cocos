@@ -14,12 +14,13 @@ namespace CocosTradingAPI.Infrastructure.Repositories
             _context = context;
         }
 
-        public async Task<MarketData?> GetLatestForInstrumentAsync(int instrumentId)
+        public async Task<List<MarketData>> GetLatestForInstrumentsAsync(IEnumerable<int> instrumentIds)
         {
             return await _context.MarketData
-                .Where(m => m.InstrumentId == instrumentId)
-                .OrderByDescending(m => m.Date)
-                .FirstOrDefaultAsync();
+                .Where(md => instrumentIds.Contains(md.InstrumentId))
+                .GroupBy(md => md.InstrumentId)
+                .Select(g => g.OrderByDescending(md => md.Date).First())
+                .ToListAsync();
         }
     }
 }

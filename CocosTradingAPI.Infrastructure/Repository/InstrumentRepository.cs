@@ -37,7 +37,7 @@ namespace CocosTradingAPI.Infrastructure.Repositories
                     market.Close,
                     market.PreviousClose
                 })
-                .ToListAsync(); // Traemos todo a memoria
+                .ToListAsync();
 
             var grouped = joined
                 .GroupBy(x => new { x.Id, x.Ticker, x.Name, x.Type })

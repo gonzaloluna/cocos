@@ -26,6 +26,7 @@ namespace CocosTradingAPI.WebAPI
             services.AddScoped<IPortfolioService, PortfolioService>();
             services.AddScoped<IOrderRepository, OrderRepository>();
             services.AddScoped<IMarketDataRepository, MarketDataRepository>();
+            services.AddScoped<IPortfolioCalculator, PortfolioCalculator>();
 
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen();
