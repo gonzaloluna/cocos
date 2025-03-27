@@ -5,19 +5,20 @@ namespace CocosTradingAPI.Application.Services
     using CocosTradingAPI.Domain.Enums;
     using CocosTradingAPI.Domain.Models;
     using System;
+    using System.Linq;
     using System.Threading.Tasks;
 
     public class BuyLimitOrderStrategy : IOrderExecutionStrategy
     {
         private readonly IOrderRepository _orderRepository;
-        private readonly IInstrumentRepository _instrumentRepository;
+        private readonly IMarketDataRepository _marketDataRepository;
 
         public BuyLimitOrderStrategy(
             IOrderRepository orderRepository,
-            IInstrumentRepository instrumentRepository)
+            IMarketDataRepository marketDataRepository)
         {
             _orderRepository = orderRepository;
-            _instrumentRepository = instrumentRepository;
+            _marketDataRepository = marketDataRepository;
         }
 
         public bool AppliesTo(OrderRequestDto request)
@@ -27,36 +28,42 @@ namespace CocosTradingAPI.Application.Services
 
         public async Task<OrderResultDto> ExecuteAsync(OrderRequestDto request)
         {
-            if (!request.Price.HasValue || request.Price <= 0)
+            // Obtener el cash disponible del usuario
+            var availableCash = await _orderRepository.GetAvailableCashAsync(request.UserId);
+            var totalCost = request.Size * request.Price;
+
+            if (availableCash < totalCost)
             {
                 return new OrderResultDto
                 {
                     Success = false,
                     Status = OrderStatus.REJECTED,
-                    Message = "Price is required for LIMIT orders"
+                    Message = "Insufficient funds to buy the requested shares"
                 };
             }
 
-            var cashAvailable = await _orderRepository.GetAvailableCashAsync(request.UserId);
-            var totalCost = request.Price.Value * request.Size;
+            // Obtener datos de mercado del instrumento
+            var marketDataList = await _marketDataRepository.GetLatestForInstrumentsAsync(new[] { request.InstrumentId });
+            var marketData = marketDataList.FirstOrDefault();
 
-            if (cashAvailable < totalCost)
+            if (marketData == null || marketData.Close > request.Price)
             {
                 return new OrderResultDto
                 {
                     Success = false,
                     Status = OrderStatus.REJECTED,
-                    Message = "Insufficient funds for limit order"
+                    Message = "Market price is higher than the limit price"
                 };
             }
 
+            // Si todas las condiciones son correctas, se crea la orden con estado 'NEW'
             var order = new Order
             {
                 UserId = request.UserId,
                 InstrumentId = request.InstrumentId,
                 Side = OrderSide.BUY,
                 Type = OrderType.LIMIT,
-                Price = request.Price.Value,
+                Price = (decimal)request.Price,
                 Size = request.Size,
                 Status = OrderStatus.NEW,
                 DateTime = DateTime.UtcNow
@@ -67,7 +74,7 @@ namespace CocosTradingAPI.Application.Services
             return new OrderResultDto
             {
                 Success = true,
-                Status = OrderStatus.NEW,
+                Status = OrderStatus.NEW, 
                 Message = "Limit buy order created"
             };
         }

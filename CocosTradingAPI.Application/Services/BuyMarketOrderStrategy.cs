@@ -4,6 +4,7 @@ namespace CocosTradingAPI.Application.Services
     using CocosTradingAPI.Application.Interfaces;
     using CocosTradingAPI.Domain.Enums;
     using CocosTradingAPI.Domain.Models;
+    using Microsoft.Extensions.Logging;
     using System;
     using System.Linq;
     using System.Threading.Tasks;
@@ -12,16 +13,16 @@ namespace CocosTradingAPI.Application.Services
     {
         private readonly IOrderRepository _orderRepository;
         private readonly IMarketDataRepository _marketDataRepository;
-        private readonly IInstrumentRepository _instrumentRepository;
+        private readonly ILogger<BuyMarketOrderStrategy> _logger;
 
         public BuyMarketOrderStrategy(
             IOrderRepository orderRepository,
             IMarketDataRepository marketDataRepository,
-            IInstrumentRepository instrumentRepository)
+             ILogger<BuyMarketOrderStrategy> logger)
         {
             _orderRepository = orderRepository;
             _marketDataRepository = marketDataRepository;
-            _instrumentRepository = instrumentRepository;
+            _logger = logger;
         }
 
         public bool AppliesTo(OrderRequestDto request)
@@ -37,6 +38,8 @@ namespace CocosTradingAPI.Application.Services
 
             if (marketData == null || marketData.Close <= 0)
             {
+                 _logger.LogWarning("Order rejected for User {UserId}, Instrument {InstrumentId}: No market data found for instrument",
+                               request.UserId, request.InstrumentId);
                 return new OrderResultDto
                 {
                     Success = false,
@@ -51,6 +54,8 @@ namespace CocosTradingAPI.Application.Services
 
             if (cashAvailable < totalCost)
             {
+                 _logger.LogWarning("Order rejected for User {UserId}, Instrument {InstrumentId}: Insufficient funds",
+                               request.UserId, request.InstrumentId);
                 return new OrderResultDto
                 {
                     Success = false,

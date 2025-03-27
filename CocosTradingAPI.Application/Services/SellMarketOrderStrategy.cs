@@ -11,16 +11,13 @@ namespace CocosTradingAPI.Application.Services
     {
         private readonly IOrderRepository _orderRepository;
         private readonly IMarketDataRepository _marketDataRepository;
-        private readonly IInstrumentRepository _instrumentRepository;
 
         public SellMarketOrderStrategy(
             IOrderRepository orderRepository,
-            IMarketDataRepository marketDataRepository,
-            IInstrumentRepository instrumentRepository)
+            IMarketDataRepository marketDataRepository)
         {
             _orderRepository = orderRepository;
             _marketDataRepository = marketDataRepository;
-            _instrumentRepository = instrumentRepository;
         }
 
         public bool AppliesTo(OrderRequestDto request)
