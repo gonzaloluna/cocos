@@ -1,7 +1,9 @@
+using System.Text.Json.Serialization;
 using CocosTradingAPI.Application.Interfaces;
 using CocosTradingAPI.Application.Services;
 using CocosTradingAPI.Infrastructure.Data;
 using CocosTradingAPI.Infrastructure.Repositories;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace CocosTradingAPI.WebAPI
@@ -21,7 +23,11 @@ namespace CocosTradingAPI.WebAPI
                 options.UseNpgsql(_configuration.GetConnectionString("DefaultConnection")));
 
             services.AddControllers();
-
+            services.AddControllers()
+                .AddJsonOptions(opts =>
+                {
+                    opts.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+                });
             services.AddScoped<IInstrumentRepository, InstrumentRepository>();
             services.AddScoped<IPortfolioService, PortfolioService>();
             services.AddScoped<IOrderRepository, OrderRepository>();
@@ -34,6 +40,24 @@ namespace CocosTradingAPI.WebAPI
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.UseExceptionHandler(errorApp =>
+            {
+                errorApp.Run(async context =>
+                {
+                    context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+                    context.Response.ContentType = "application/problem+json";
+
+                    var problem = new ProblemDetails
+                    {
+                        Status = 500,
+                        Title = "Internal Server Error",
+                        Detail = "An unexpected error occurred."
+                    };
+
+                    await context.Response.WriteAsJsonAsync(problem);
+                });
+            });
+
             if (env.IsDevelopment())
             {
                 app.UseSwagger();

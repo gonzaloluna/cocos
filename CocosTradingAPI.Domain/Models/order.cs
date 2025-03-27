@@ -29,9 +29,8 @@ namespace CocosTradingAPI.Domain.Models
         [Column("price", TypeName = "numeric(10,2)")]
         public decimal Price { get; set; }
 
-        [MaxLength(10)]
         [Column("type")]
-        public string Type { get; set; } = string.Empty; 
+        public OrderType Type { get; set; }
 
         [Column("side")]
         public OrderSide Side { get; set; }  
