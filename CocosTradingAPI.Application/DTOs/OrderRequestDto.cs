@@ -6,9 +6,10 @@ namespace CocosTradingAPI.Application.DTOs
     {
         public int UserId { get; set; }
         public int InstrumentId { get; set; }
-        public OrderSide  Side { get; set; }
-        public OrderType  Type { get; set; }
+        public OrderSide Side { get; set; }
+        public OrderType Type { get; set; }
         public int Size { get; set; }
-        public decimal? Price { get; set; }
+        public decimal TotalAmount { get; set; }
+        public decimal Price { get; set; }
     }
 }
