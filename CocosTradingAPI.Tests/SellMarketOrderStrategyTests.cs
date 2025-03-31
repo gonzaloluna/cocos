@@ -37,7 +37,8 @@ namespace CocosTradingAPI.Tests.Application.Services
             var mockOrderRepo = new Mock<IOrderRepository>();
             var mockMarketRepo = new Mock<IMarketDataRepository>();
             var mockLogger = new Mock<ILogger<SellMarketOrderStrategy>>();
-
+            var mockOrderServiceLogger = new Mock<ILogger<OrderService>>();
+            
             mockOrderRepo.Setup(repo => repo.GetFilledOrdersByUserAndInstrumentAsync(request.UserId, request.InstrumentId))
                          .ReturnsAsync(new List<Order>
                          {
@@ -57,8 +58,9 @@ namespace CocosTradingAPI.Tests.Application.Services
                 mockMarketRepo.Object
             );
 
+            var orderService = new OrderService(new [] {strategy}, mockOrderServiceLogger.Object);
             // Act
-            var result = await strategy.ExecuteAsync(request);
+            var result = await orderService.PlaceOrderAsync(request);
 
             // Assert
             Assert.True(result.Success);
@@ -95,7 +97,8 @@ namespace CocosTradingAPI.Tests.Application.Services
             var mockOrderRepo = new Mock<IOrderRepository>();
             var mockMarketRepo = new Mock<IMarketDataRepository>();
             var mockLogger = new Mock<ILogger<SellMarketOrderStrategy>>();
-
+            var mockOrderServiceLogger = new Mock<ILogger<OrderService>>();
+            
             mockOrderRepo.Setup(repo => repo.GetFilledOrdersByUserAndInstrumentAsync(request.UserId, request.InstrumentId))
                         .ReturnsAsync(new List<Order>
                         {
@@ -110,8 +113,9 @@ namespace CocosTradingAPI.Tests.Application.Services
                 mockMarketRepo.Object
             );
 
+            var orderService = new OrderService(new [] {strategy}, mockOrderServiceLogger.Object);
             // Act
-            var result = await strategy.ExecuteAsync(request);
+            var result = await orderService.PlaceOrderAsync(request);
 
             // Assert
             Assert.False(result.Success);
@@ -145,7 +149,8 @@ namespace CocosTradingAPI.Tests.Application.Services
             var mockOrderRepo = new Mock<IOrderRepository>();
             var mockMarketRepo = new Mock<IMarketDataRepository>();
             var mockLogger = new Mock<ILogger<SellMarketOrderStrategy>>();
-
+            var mockOrderServiceLogger = new Mock<ILogger<OrderService>>();
+            
             mockOrderRepo.Setup(repo => repo.GetFilledOrdersByUserAndInstrumentAsync(request.UserId, request.InstrumentId))
                          .ReturnsAsync(new List<Order>
                          {
@@ -165,8 +170,9 @@ namespace CocosTradingAPI.Tests.Application.Services
                 mockMarketRepo.Object
             );
 
+            var orderService = new OrderService(new [] {strategy}, mockOrderServiceLogger.Object);
             // Act
-            var result = await strategy.ExecuteAsync(request);
+            var result = await orderService.PlaceOrderAsync(request);
 
             // Assert
             Assert.False(result.Success);
@@ -199,7 +205,8 @@ namespace CocosTradingAPI.Tests.Application.Services
             var mockOrderRepo = new Mock<IOrderRepository>();
             var mockMarketRepo = new Mock<IMarketDataRepository>();
             var mockLogger = new Mock<ILogger<SellMarketOrderStrategy>>();
-
+            var mockOrderServiceLogger = new Mock<ILogger<OrderService>>();
+            
             mockOrderRepo.Setup(repo => repo.GetFilledOrdersByUserAndInstrumentAsync(request.UserId, request.InstrumentId))
                          .ReturnsAsync(new List<Order>
                          {
@@ -220,8 +227,9 @@ namespace CocosTradingAPI.Tests.Application.Services
                 mockMarketRepo.Object
             );
 
+            var orderService = new OrderService(new [] {strategy}, mockOrderServiceLogger.Object);
             // Act
-            var result = await strategy.ExecuteAsync(request);
+            var result = await orderService.PlaceOrderAsync(request);
 
             // Assert
             Assert.False(result.Success);

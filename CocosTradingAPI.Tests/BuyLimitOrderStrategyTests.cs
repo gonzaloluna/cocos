@@ -34,6 +34,7 @@ namespace CocosTradingAPI.Tests.Application.Services
             var mockOrderRepo = new Mock<IOrderRepository>();
             var mockMarketRepo = new Mock<IMarketDataRepository>();
             var mockLogger = new Mock<ILogger<BuyLimitOrderStrategy>>();
+            var mockOrderServiceLogger = new Mock<ILogger<OrderService>>();
 
             // Simulamos que el usuario tiene 150 disponible (5 * 20 = 100 para la compra)
             mockOrderRepo.Setup(repo => repo.GetAvailableCashAsync(request.UserId))
@@ -52,8 +53,9 @@ namespace CocosTradingAPI.Tests.Application.Services
                 mockMarketRepo.Object
             );
 
+             var orderService = new OrderService(new [] {strategy}, mockOrderServiceLogger.Object);
             // Act
-            var result = await strategy.ExecuteAsync(request);
+            var result = await orderService.PlaceOrderAsync(request);
 
             // Assert
             Assert.True(result.Success);
@@ -87,6 +89,7 @@ namespace CocosTradingAPI.Tests.Application.Services
             var mockOrderRepo = new Mock<IOrderRepository>();
             var mockMarketRepo = new Mock<IMarketDataRepository>();
             var mockLogger = new Mock<ILogger<BuyLimitOrderStrategy>>();
+            var mockOrderServiceLogger = new Mock<ILogger<OrderService>>();
 
             mockOrderRepo.Setup(repo => repo.GetAvailableCashAsync(request.UserId))
                          .ReturnsAsync(150);
@@ -98,15 +101,14 @@ namespace CocosTradingAPI.Tests.Application.Services
                 mockOrderRepo.Object,
                 mockMarketRepo.Object
             );
-
+            var orderService = new OrderService(new [] {strategy}, mockOrderServiceLogger.Object);
             // Act
-            var result = await strategy.ExecuteAsync(request);
+            var result = await orderService.PlaceOrderAsync(request);
 
             // Assert
             Assert.False(result.Success);
             Assert.Equal(OrderStatus.REJECTED, result.Status);
             Assert.Equal("No market data available for the selected instrument", result.Message);
-            
             mockOrderRepo.Verify(repo => repo.AddAsync(It.IsAny<Order>()), Times.Never); // No debe llamar AddAsync
         }
 
@@ -131,6 +133,7 @@ namespace CocosTradingAPI.Tests.Application.Services
             var mockOrderRepo = new Mock<IOrderRepository>();
             var mockMarketRepo = new Mock<IMarketDataRepository>();
             var mockLogger = new Mock<ILogger<BuyLimitOrderStrategy>>();
+            var mockOrderServiceLogger = new Mock<ILogger<OrderService>>();
 
             mockOrderRepo.Setup(repo => repo.GetAvailableCashAsync(request.UserId))
                          .ReturnsAsync(150);
@@ -148,8 +151,9 @@ namespace CocosTradingAPI.Tests.Application.Services
                 mockMarketRepo.Object
             );
 
+            var orderService = new OrderService(new [] {strategy}, mockOrderServiceLogger.Object);
             // Act
-            var result = await strategy.ExecuteAsync(request);
+            var result = await orderService.PlaceOrderAsync(request);
 
             // Assert
             Assert.False(result.Success);
@@ -179,7 +183,8 @@ namespace CocosTradingAPI.Tests.Application.Services
             var mockOrderRepo = new Mock<IOrderRepository>();
             var mockMarketRepo = new Mock<IMarketDataRepository>();
             var mockLogger = new Mock<ILogger<BuyLimitOrderStrategy>>();
-
+            var mockOrderServiceLogger = new Mock<ILogger<OrderService>>();
+            
             // Simulamos que el usuario tiene 50 disponible, lo que no es suficiente para comprar 5 acciones a 20 cada una
             mockOrderRepo.Setup(repo => repo.GetAvailableCashAsync(request.UserId))
                          .ReturnsAsync(50);
@@ -197,8 +202,9 @@ namespace CocosTradingAPI.Tests.Application.Services
                 mockMarketRepo.Object
             );
 
+            var orderService = new OrderService(new [] {strategy}, mockOrderServiceLogger.Object);
             // Act
-            var result = await strategy.ExecuteAsync(request);
+            var result = await orderService.PlaceOrderAsync(request);
 
             // Assert
             Assert.False(result.Success);

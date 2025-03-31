@@ -50,16 +50,17 @@ namespace CocosTradingAPI.Tests.Application.Services
                 .ReturnsAsync(new List<MarketData> { marketData });
 
             var mockLogger = new Mock<ILogger<BuyMarketOrderStrategy>>();
-
+            var mockOrderServiceLogger = new Mock<ILogger<OrderService>>();
+            
             var strategy = new BuyMarketOrderStrategy(
                 mockOrderRepo.Object,
                 mockMarketRepo.Object,
                 mockLogger.Object
             );
 
+            var orderService = new OrderService(new [] {strategy}, mockOrderServiceLogger.Object);
             // Act
-            var result = await strategy.ExecuteAsync(request);
-
+            var result = await orderService.PlaceOrderAsync(request);
             // Assert
             mockOrderRepo.Verify(r => r.AddAsync(It.Is<Order>(
                 o => o.UserId == request.UserId &&
@@ -101,15 +102,17 @@ namespace CocosTradingAPI.Tests.Application.Services
                 .ReturnsAsync(new List<MarketData>()); // sin datos
 
             var mockLogger = new Mock<ILogger<BuyMarketOrderStrategy>>();
-
+            var mockOrderServiceLogger = new Mock<ILogger<OrderService>>();
+            
             var strategy = new BuyMarketOrderStrategy(
                 mockOrderRepo.Object,
                 mockMarketRepo.Object,
                 mockLogger.Object
             );
 
+            var orderService = new OrderService(new [] {strategy}, mockOrderServiceLogger.Object);
             // Act
-            var result = await strategy.ExecuteAsync(request);
+            var result = await orderService.PlaceOrderAsync(request);
 
             // Assert
             mockOrderRepo.Verify(r => r.AddAsync(It.IsAny<Order>()), Times.Never);
@@ -145,7 +148,8 @@ namespace CocosTradingAPI.Tests.Application.Services
             var mockOrderRepo = new Mock<IOrderRepository>();
             var mockMarketRepo = new Mock<IMarketDataRepository>();
             var mockLogger = new Mock<ILogger<BuyMarketOrderStrategy>>();
-
+            var mockOrderServiceLogger = new Mock<ILogger<OrderService>>();
+            
             // Simular cash disponible del usuario = 100
             mockOrderRepo.Setup(repo => repo.GetAvailableCashAsync(request.UserId))
                          .ReturnsAsync(100);
@@ -166,8 +170,9 @@ namespace CocosTradingAPI.Tests.Application.Services
                 mockLogger.Object
             );
 
-            // Act: ejecutar la estrategia de compra de mercado
-            var result = await strategy.ExecuteAsync(request);
+            var orderService = new OrderService(new [] {strategy}, mockOrderServiceLogger.Object);
+            // Act
+            var result = await orderService.PlaceOrderAsync(request);
 
             // Assert: verificar que el resultado sea rechazo y no se guarde la orden
             Assert.False(result.Success, "La operación debería fallar por fondos insuficientes");
@@ -201,7 +206,8 @@ namespace CocosTradingAPI.Tests.Application.Services
             var mockOrderRepo = new Mock<IOrderRepository>();
             var mockMarketRepo = new Mock<IMarketDataRepository>();
             var mockLogger = new Mock<ILogger<BuyMarketOrderStrategy>>();
-
+            var mockOrderServiceLogger = new Mock<ILogger<OrderService>>();
+            
             // Simular cash disponible del usuario = 100
             mockOrderRepo.Setup(repo => repo.GetAvailableCashAsync(request.UserId))
                          .ReturnsAsync(100);
@@ -222,8 +228,9 @@ namespace CocosTradingAPI.Tests.Application.Services
                 mockLogger.Object
             );
 
-            // Act: ejecutar la estrategia de compra de mercado
-            var result = await strategy.ExecuteAsync(request);
+            var orderService = new OrderService(new [] {strategy}, mockOrderServiceLogger.Object);
+            // Act
+            var result = await orderService.PlaceOrderAsync(request);
 
             // Assert: verificar que el resultado sea rechazo y no se guarde la orden
             Assert.False(result.Success, "La operación debería fallar debido a precio de mercado 0 o negativo");

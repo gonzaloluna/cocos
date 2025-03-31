@@ -34,7 +34,8 @@ namespace CocosTradingAPI.Tests.Application.Services
             var mockOrderRepo = new Mock<IOrderRepository>();
             var mockMarketRepo = new Mock<IMarketDataRepository>();
             var mockLogger = new Mock<ILogger<SellLimitOrderStrategy>>();
-
+            var mockOrderServiceLogger = new Mock<ILogger<OrderService>>();
+            
             // Simulamos que el usuario tiene 10 acciones disponibles
             var existingOrders = new List<Order>
             {
@@ -57,8 +58,9 @@ namespace CocosTradingAPI.Tests.Application.Services
                 mockMarketRepo.Object
             );
 
+            var orderService = new OrderService(new [] {strategy}, mockOrderServiceLogger.Object);
             // Act
-            var result = await strategy.ExecuteAsync(request);
+            var result = await orderService.PlaceOrderAsync(request);
 
             // Assert
             Assert.True(result.Success);
@@ -91,7 +93,8 @@ namespace CocosTradingAPI.Tests.Application.Services
 
             var mockOrderRepo = new Mock<IOrderRepository>();
             var mockMarketRepo = new Mock<IMarketDataRepository>();
-
+            var mockOrderServiceLogger = new Mock<ILogger<OrderService>>();
+            
             // Simulamos que el usuario tiene 5 acciones disponibles
             var existingOrders = new List<Order>
             {
@@ -114,8 +117,9 @@ namespace CocosTradingAPI.Tests.Application.Services
                 mockMarketRepo.Object
             );
 
+            var orderService = new OrderService(new [] {strategy}, mockOrderServiceLogger.Object);
             // Act
-            var result = await strategy.ExecuteAsync(request);
+            var result = await orderService.PlaceOrderAsync(request);
 
             // Assert
             Assert.False(result.Success);
@@ -144,7 +148,8 @@ namespace CocosTradingAPI.Tests.Application.Services
 
             var mockOrderRepo = new Mock<IOrderRepository>();
             var mockMarketRepo = new Mock<IMarketDataRepository>();
-
+            var mockOrderServiceLogger = new Mock<ILogger<OrderService>>();
+            
             // Simulamos que el usuario tiene 10 acciones disponibles
             var existingOrders = new List<Order>
             {
@@ -167,8 +172,9 @@ namespace CocosTradingAPI.Tests.Application.Services
                 mockMarketRepo.Object
             );
 
+            var orderService = new OrderService(new [] {strategy}, mockOrderServiceLogger.Object);
             // Act
-            var result = await strategy.ExecuteAsync(request);
+            var result = await orderService.PlaceOrderAsync(request);
 
             // Assert
             Assert.False(result.Success);
@@ -197,7 +203,8 @@ namespace CocosTradingAPI.Tests.Application.Services
 
             var mockOrderRepo = new Mock<IOrderRepository>();
             var mockMarketRepo = new Mock<IMarketDataRepository>();
-
+            var mockOrderServiceLogger = new Mock<ILogger<OrderService>>();
+            
             // Simulamos que el usuario tiene 10 acciones disponibles
             var existingOrders = new List<Order>
             {
@@ -216,8 +223,9 @@ namespace CocosTradingAPI.Tests.Application.Services
                 mockMarketRepo.Object
             );
 
+            var orderService = new OrderService(new [] {strategy}, mockOrderServiceLogger.Object);
             // Act
-            var result = await strategy.ExecuteAsync(request);
+            var result = await orderService.PlaceOrderAsync(request);
 
             // Assert
             Assert.False(result.Success);

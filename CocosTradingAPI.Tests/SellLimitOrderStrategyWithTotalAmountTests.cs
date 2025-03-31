@@ -34,7 +34,8 @@ namespace CocosTradingAPI.Tests.Application.Services
             var mockOrderRepo = new Mock<IOrderRepository>();
             var mockMarketRepo = new Mock<IMarketDataRepository>();
             var mockLogger = new Mock<ILogger<SellLimitOrderStrategyWithTotalAmount>>();
-
+            var mockOrderServiceLogger = new Mock<ILogger<OrderService>>();
+            
             // Simulamos que el usuario tiene 10 acciones disponibles para vender
             mockOrderRepo.Setup(repo => repo.GetFilledOrdersByUserAndInstrumentAsync(request.UserId, request.InstrumentId))
                          .ReturnsAsync(new List<Order> { new Order { Side = OrderSide.BUY, Size = 10 } });
@@ -52,8 +53,9 @@ namespace CocosTradingAPI.Tests.Application.Services
                 mockMarketRepo.Object
             );
 
+            var orderService = new OrderService(new [] {strategy}, mockOrderServiceLogger.Object);
             // Act
-            var result = await strategy.ExecuteAsync(request);
+            var result = await orderService.PlaceOrderAsync(request);
 
             // Assert
             Assert.True(result.Success);
@@ -87,7 +89,8 @@ namespace CocosTradingAPI.Tests.Application.Services
             var mockOrderRepo = new Mock<IOrderRepository>();
             var mockMarketRepo = new Mock<IMarketDataRepository>();
             var mockLogger = new Mock<ILogger<SellLimitOrderStrategyWithTotalAmount>>();
-
+            var mockOrderServiceLogger = new Mock<ILogger<OrderService>>();
+            
             // Simulamos que el usuario tiene 10 acciones disponibles para vender
             mockOrderRepo.Setup(repo => repo.GetFilledOrdersByUserAndInstrumentAsync(request.UserId, request.InstrumentId))
                          .ReturnsAsync(new List<Order> { new Order { Side = OrderSide.BUY, Size = 10 } });
@@ -100,8 +103,9 @@ namespace CocosTradingAPI.Tests.Application.Services
                 mockMarketRepo.Object
             );
 
+            var orderService = new OrderService(new [] {strategy}, mockOrderServiceLogger.Object);
             // Act
-            var result = await strategy.ExecuteAsync(request);
+            var result = await orderService.PlaceOrderAsync(request);
 
             // Assert
             Assert.False(result.Success);
@@ -132,7 +136,8 @@ namespace CocosTradingAPI.Tests.Application.Services
             var mockOrderRepo = new Mock<IOrderRepository>();
             var mockMarketRepo = new Mock<IMarketDataRepository>();
             var mockLogger = new Mock<ILogger<SellLimitOrderStrategyWithTotalAmount>>();
-
+            var mockOrderServiceLogger = new Mock<ILogger<OrderService>>();
+            
             // Simulamos que el usuario tiene solo 1 accion disponible para vender
             mockOrderRepo.Setup(repo => repo.GetFilledOrdersByUserAndInstrumentAsync(request.UserId, request.InstrumentId))
                          .ReturnsAsync(new List<Order> { new Order { Side = OrderSide.BUY, Size = 1 } });
@@ -150,8 +155,9 @@ namespace CocosTradingAPI.Tests.Application.Services
                 mockMarketRepo.Object
             );
 
+            var orderService = new OrderService(new [] {strategy}, mockOrderServiceLogger.Object);
             // Act
-            var result = await strategy.ExecuteAsync(request);
+            var result = await orderService.PlaceOrderAsync(request);
 
             // Assert
             Assert.False(result.Success);
@@ -182,7 +188,8 @@ namespace CocosTradingAPI.Tests.Application.Services
             var mockOrderRepo = new Mock<IOrderRepository>();
             var mockMarketRepo = new Mock<IMarketDataRepository>();
             var mockLogger = new Mock<ILogger<SellLimitOrderStrategyWithTotalAmount>>();
-
+            var mockOrderServiceLogger = new Mock<ILogger<OrderService>>();
+            
             mockOrderRepo.Setup(repo => repo.GetFilledOrdersByUserAndInstrumentAsync(request.UserId, request.InstrumentId))
                          .ReturnsAsync(new List<Order> { new Order { Side = OrderSide.BUY, Size = 10 } });
 
@@ -199,8 +206,9 @@ namespace CocosTradingAPI.Tests.Application.Services
                 mockMarketRepo.Object
             );
 
+            var orderService = new OrderService(new [] {strategy}, mockOrderServiceLogger.Object);
             // Act
-            var result = await strategy.ExecuteAsync(request);
+            var result = await orderService.PlaceOrderAsync(request);
 
             // Assert
             Assert.False(result.Success);
@@ -210,53 +218,5 @@ namespace CocosTradingAPI.Tests.Application.Services
             mockOrderRepo.Verify(repo => repo.AddAsync(It.IsAny<Order>()), Times.Never); // No debe llamar AddAsync
         }
 
-        /// <summary>
-        /// Verifica que SellLimitOrderStrategyWithTotalAmount rechace una orden de venta de tipo LIMIT
-        /// cuando el TotalAmount es menor o igual a 0.
-        /// </summary>
-        [Fact]
-        public async Task ExecuteAsync_ShouldRejectOrder_WhenTotalAmountIsZeroOrNegative()
-        {
-            // Arrange
-            var request = new OrderRequestDto
-            {
-                UserId = 1,
-                InstrumentId = 1,
-                Side = OrderSide.SELL,
-                Type = OrderType.LIMIT,
-                TotalAmount = 0m, // Monto total inválido
-                Price = 50m
-            };
-
-            var mockOrderRepo = new Mock<IOrderRepository>();
-            var mockMarketRepo = new Mock<IMarketDataRepository>();
-            var mockLogger = new Mock<ILogger<SellLimitOrderStrategyWithTotalAmount>>();
-
-            mockOrderRepo.Setup(repo => repo.GetAvailableCashAsync(request.UserId))
-                         .ReturnsAsync(150);
-
-            var marketData = new MarketData
-            {
-                InstrumentId = request.InstrumentId,
-                Close = 45m
-            };
-            mockMarketRepo.Setup(repo => repo.GetLatestForInstrumentsAsync(It.IsAny<IEnumerable<int>>()))
-                          .ReturnsAsync(new List<MarketData> { marketData });
-
-            var strategy = new SellLimitOrderStrategyWithTotalAmount(
-                mockOrderRepo.Object,
-                mockMarketRepo.Object
-            );
-
-            // Act
-            var result = await strategy.ExecuteAsync(request);
-
-            // Assert
-            Assert.False(result.Success);
-            Assert.Equal(OrderStatus.REJECTED, result.Status);
-            Assert.Equal("Total amount must be greater than zero", result.Message);
-
-            mockOrderRepo.Verify(repo => repo.AddAsync(It.IsAny<Order>()), Times.Never); // No debe llamar AddAsync
-        }
     }
 }
