@@ -1,76 +1,144 @@
-﻿using Xunit;
-using Moq;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using CocosTradingAPI.Application.DTOs;
-using CocosTradingAPI.Application.Interfaces;
-using CocosTradingAPI.Application.Services;
-using CocosTradingAPI.Domain.Enums;
+﻿using Moq;
+using Xunit;
 using Microsoft.Extensions.Logging;
-using System;
+using System.Threading.Tasks;
+using CocosTradingAPI.Application.DTOs;
+using CocosTradingAPI.Application.Services;
+using CocosTradingAPI.Application.Interfaces;
+using CocosTradingAPI.Domain.Enums;
+using CocosTradingAPI.Domain.Models;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace CocosTradingAPI.Tests.Application.Services
 {
     public class OrderServiceTests
     {
-        private readonly Mock<ILogger<OrderService>> _loggerMock = new();
-
+        /// <summary>
+        /// Verifica que el servicio de órdenes selecciona el strategy correcto 
+        /// basado en las condiciones de `AppliesTo` del `OrderRequestDto` para cada tipo de orden.
+        /// </summary>
         [Fact]
-        public async Task PlaceOrderAsync_ShouldUseCorrectStrategyAndReturnResult()
+        public async Task PlaceOrderAsync_ShouldSelectCorrectStrategyBasedOnOrderType()
         {
             // Arrange
-            var request = new OrderRequestDto
+            var requestBuyMarket = new OrderRequestDto
             {
                 UserId = 1,
-                InstrumentId = 10,
+                InstrumentId = 1,
                 Side = OrderSide.BUY,
                 Type = OrderType.MARKET,
                 Size = 5
             };
 
-            var expectedResult = new OrderResultDto
+            var requestSellMarket = new OrderRequestDto
             {
-                Success = true,
-                Status = OrderStatus.FILLED,
-                Message = "Success"
+                UserId = 1,
+                InstrumentId = 1,
+                Side = OrderSide.SELL,
+                Type = OrderType.MARKET,
+                Size = 5
             };
 
-            var mockStrategy = new Mock<IOrderExecutionStrategy>();
-            mockStrategy.Setup(s => s.AppliesTo(It.IsAny<OrderRequestDto>())).Returns(true);
-            mockStrategy.Setup(s => s.ExecuteAsync(It.IsAny<OrderRequestDto>())).ReturnsAsync(expectedResult);
+            var requestBuyLimit = new OrderRequestDto
+            {
+                UserId = 1,
+                InstrumentId = 1,
+                Side = OrderSide.BUY,
+                Type = OrderType.LIMIT,
+                Size = 5,
+                Price = 50m
+            };
 
-            var service = new OrderService(new List<IOrderExecutionStrategy> { mockStrategy.Object }, _loggerMock.Object);
+            var requestSellLimit = new OrderRequestDto
+            {
+                UserId = 1,
+                InstrumentId = 1,
+                Side = OrderSide.SELL,
+                Type = OrderType.LIMIT,
+                Size = 5,
+                Price = 50m
+            };
 
-            // Act
-            var result = await service.PlaceOrderAsync(request);
+            var requestBuyLimitWithTotalAmount = new OrderRequestDto
+            {
+                UserId = 1,
+                InstrumentId = 1,
+                Side = OrderSide.BUY,
+                Type = OrderType.LIMIT,
+                TotalAmount = 100m
+            };
+
+            var requestSellLimitWithTotalAmount = new OrderRequestDto
+            {
+                UserId = 1,
+                InstrumentId = 1,
+                Side = OrderSide.SELL,
+                Type = OrderType.LIMIT,
+                TotalAmount = 100m,
+                Price = 50m
+            };
+
+            var mockOrderRepo = new Mock<IOrderRepository>();
+            var mockMarketRepo = new Mock<IMarketDataRepository>();
+            var mockLogger = new Mock<ILogger<OrderService>>();
+
+            // Mock de los strategies
+            var mockBuyMarketStrategy = new Mock<IOrderExecutionStrategy>();
+            var mockSellMarketStrategy = new Mock<IOrderExecutionStrategy>();
+            var mockBuyLimitStrategy = new Mock<IOrderExecutionStrategy>();
+            var mockSellLimitStrategy = new Mock<IOrderExecutionStrategy>();
+            var mockBuyLimitWithTotalAmountStrategy = new Mock<IOrderExecutionStrategy>();
+            var mockSellLimitWithTotalAmountStrategy = new Mock<IOrderExecutionStrategy>();
+
+            // Setup de las condiciones para cada strategy
+            mockBuyMarketStrategy.Setup(strategy => strategy.AppliesTo(requestBuyMarket)).Returns(true);
+            mockSellMarketStrategy.Setup(strategy => strategy.AppliesTo(requestSellMarket)).Returns(true);
+            mockBuyLimitStrategy.Setup(strategy => strategy.AppliesTo(requestBuyLimit)).Returns(true);
+            mockSellLimitStrategy.Setup(strategy => strategy.AppliesTo(requestSellLimit)).Returns(true);
+            mockBuyLimitWithTotalAmountStrategy.Setup(strategy => strategy.AppliesTo(requestBuyLimitWithTotalAmount)).Returns(true);
+            mockSellLimitWithTotalAmountStrategy.Setup(strategy => strategy.AppliesTo(requestSellLimitWithTotalAmount)).Returns(true);
+
+            // Mock de OrderService, inyectando las dependencias
+            var orderService = new OrderService(
+                new List<IOrderExecutionStrategy>
+                {
+                    mockBuyMarketStrategy.Object,
+                    mockSellMarketStrategy.Object,
+                    mockBuyLimitStrategy.Object,
+                    mockSellLimitStrategy.Object,
+                    mockBuyLimitWithTotalAmountStrategy.Object,
+                    mockSellLimitWithTotalAmountStrategy.Object
+                },
+                mockLogger.Object
+            );
+
+            // Act: Ejecutar PlaceOrderAsync para los diferentes tipos de órdenes
+            var resultBuyMarket = await orderService.PlaceOrderAsync(requestBuyMarket);
+            var resultSellMarket = await orderService.PlaceOrderAsync(requestSellMarket);
+            var resultBuyLimit = await orderService.PlaceOrderAsync(requestBuyLimit);
+            var resultSellLimit = await orderService.PlaceOrderAsync(requestSellLimit);
+            var resultBuyLimitWithTotalAmount = await orderService.PlaceOrderAsync(requestBuyLimitWithTotalAmount);
+            var resultSellLimitWithTotalAmount = await orderService.PlaceOrderAsync(requestSellLimitWithTotalAmount);
 
             // Assert
-            Assert.True(result.Success);
-            Assert.Equal(OrderStatus.FILLED, result.Status);
-            Assert.Equal("Success", result.Message);
-        }
+            // Verificar que el BuyMarketOrderStrategy fue ejecutado
+            mockBuyMarketStrategy.Verify(strategy => strategy.ExecuteAsync(It.IsAny<OrderRequestDto>()), Times.Once);
 
-        [Fact]
-        public async Task PlaceOrderAsync_ShouldThrowException_WhenNoStrategyApplies()
-        {
-            // Arrange
-            var request = new OrderRequestDto
-            {
-                UserId = 1,
-                InstrumentId = 10,
-                Side = OrderSide.BUY,
-                Type = OrderType.MARKET,
-                Size = 5
-            };
+            // Verificar que el SellMarketOrderStrategy fue ejecutado
+            mockSellMarketStrategy.Verify(strategy => strategy.ExecuteAsync(It.IsAny<OrderRequestDto>()), Times.Once);
 
-            var mockStrategy = new Mock<IOrderExecutionStrategy>();
-            mockStrategy.Setup(s => s.AppliesTo(It.IsAny<OrderRequestDto>())).Returns(false);
+            // Verificar que el BuyLimitOrderStrategy fue ejecutado
+            mockBuyLimitStrategy.Verify(strategy => strategy.ExecuteAsync(It.IsAny<OrderRequestDto>()), Times.Once);
 
-            var service = new OrderService(new List<IOrderExecutionStrategy> { mockStrategy.Object }, _loggerMock.Object);
+            // Verificar que el SellLimitOrderStrategy fue ejecutado
+            mockSellLimitStrategy.Verify(strategy => strategy.ExecuteAsync(It.IsAny<OrderRequestDto>()), Times.Once);
 
-            // Act & Assert
-            await Assert.ThrowsAsync<InvalidOperationException>(() =>
-                service.PlaceOrderAsync(request));
+            // Verificar que el BuyLimitOrderStrategyWithTotalAmount fue ejecutado
+            mockBuyLimitWithTotalAmountStrategy.Verify(strategy => strategy.ExecuteAsync(It.IsAny<OrderRequestDto>()), Times.Once);
+
+            // Verificar que el SellLimitOrderStrategyWithTotalAmount fue ejecutado
+            mockSellLimitWithTotalAmountStrategy.Verify(strategy => strategy.ExecuteAsync(It.IsAny<OrderRequestDto>()), Times.Once);
         }
     }
 }

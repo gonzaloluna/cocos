@@ -110,6 +110,34 @@
 			"response": []
 		},
 		{
+			"name": "BUY Limit",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "accept",
+						"value": "*/*"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"UserId\": 1,\r\n  \"InstrumentId\": 65,\r\n  \"Side\": \"BUY\",\r\n  \"Type\": \"LIMIT\",\r\n  \"Size\": 5,\r\n  \"Price\": 800\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:5185/api/orders",
+				"description": "Generated from cURL: curl -X 'POST' \\\r\n  'http://localhost:5185/api/orders' \\\r\n  -H 'accept: */*' \\\r\n  -H 'Content-Type: application/json' \\\r\n  -d '{\r\n  \"userId\": 1,\r\n  \"instrumentId\": 65,\r\n  \"side\": \"BUY\",\r\n  \"type\": \"LIMIT\",\r\n  \"totalAmount\": 10,\r\n  \"price\": 370\r\n}'"
+			},
+			"response": []
+		},
+		{
 			"name": "SELL Limit by total amount",
 			"request": {
 				"method": "POST",
@@ -126,6 +154,34 @@
 				"body": {
 					"mode": "raw",
 					"raw": "{\r\n  \"userId\": 1,\r\n  \"instrumentId\": 65,\r\n  \"side\": \"SELL\",\r\n  \"type\": \"LIMIT\",\r\n  \"totalAmount\": 10,\r\n  \"price\": 360\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:5185/api/orders",
+				"description": "Generated from cURL: curl -X 'POST' \\\r\n  'http://localhost:5185/api/orders' \\\r\n  -H 'accept: */*' \\\r\n  -H 'Content-Type: application/json' \\\r\n  -d '{\r\n  \"userId\": 1,\r\n  \"instrumentId\": 65,\r\n  \"side\": \"SELL\",\r\n  \"type\": \"LIMIT\",\r\n  \"totalAmount\": 10,\r\n  \"price\": 360\r\n}'"
+			},
+			"response": []
+		},
+		{
+			"name": "SELL Limit",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "accept",
+						"value": "*/*"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"UserId\": 1,\r\n  \"InstrumentId\": 65,\r\n  \"Side\": \"SELL\",\r\n  \"Type\": \"LIMIT\",\r\n  \"Size\": 1,\r\n  \"Price\": 50\r\n}\r\n",
 					"options": {
 						"raw": {
 							"language": "json"

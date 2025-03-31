@@ -23,7 +23,7 @@ namespace CocosTradingAPI.Application.Services
 
         public bool AppliesTo(OrderRequestDto request)
         {
-            return request.Side == OrderSide.BUY && request.Type == OrderType.LIMIT;
+            return request.Side == OrderSide.BUY && request.Type == OrderType.LIMIT && request.TotalAmount ==null;
         }
 
         public async Task<OrderResultDto> ExecuteAsync(OrderRequestDto request)
