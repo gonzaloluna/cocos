@@ -222,7 +222,8 @@ namespace CocosTradingAPI.Tests.Application.Services
             // Assert
             Assert.False(result.Success);
             Assert.Equal(OrderStatus.REJECTED, result.Status); // La orden debe ser rechazada
-
+            Assert.Equal("No market data available for the selected instrument", result.Message);
+            
             mockOrderRepo.Verify(repo => repo.AddAsync(It.IsAny<Order>()), Times.Never); // No debe llamar AddAsync
         }
     }

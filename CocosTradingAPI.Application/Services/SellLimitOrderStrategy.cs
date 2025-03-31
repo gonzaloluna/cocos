@@ -45,8 +45,17 @@ namespace CocosTradingAPI.Application.Services
             // Obtener datos de mercado del instrumento
             var marketDataList = await _marketDataRepository.GetLatestForInstrumentsAsync(new[] { request.InstrumentId });
             var marketData = marketDataList.FirstOrDefault();
-
-            if (marketData == null || marketData.Close < request.Price)
+            
+            if (marketData == null || marketData.Close <= 0)
+            {
+                return new OrderResultDto
+                {
+                    Success = false,
+                    Status = OrderStatus.REJECTED,
+                    Message = "No market data available for the selected instrument"
+                };
+            }
+            if (marketData.Close < request.Price)
             {
                 return new OrderResultDto
                 {
