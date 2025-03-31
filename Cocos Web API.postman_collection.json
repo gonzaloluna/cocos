@@ -1,0 +1,169 @@
+{
+	"info": {
+		"_postman_id": "9aaca9de-f7db-4ac3-ba7a-5261714dd4f6",
+		"name": "Cocos Web API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "43599305"
+	},
+	"item": [
+		{
+			"name": "Portfolio",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "accept",
+						"value": "text/plain"
+					}
+				],
+				"url": "http://localhost:5185/api/portfolio/1",
+				"description": "Generated from cURL: curl -X 'GET' \\\r\n  'http://localhost:5185/api/portfolio/1' \\\r\n  -H 'accept: text/plain'"
+			},
+			"response": []
+		},
+		{
+			"name": "Search instruments",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "accept",
+						"value": "text/plain"
+					}
+				],
+				"url": {
+					"raw": "http://localhost:5185/api/instruments?query=a",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5185",
+					"path": [
+						"api",
+						"instruments"
+					],
+					"query": [
+						{
+							"key": "query",
+							"value": "a"
+						}
+					]
+				},
+				"description": "Generated from cURL: curl -X 'GET' \\\r\n  'http://localhost:5185/api/instruments?query=a' \\\r\n  -H 'accept: text/plain'"
+			},
+			"response": []
+		},
+		{
+			"name": "BUY Market",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "accept",
+						"value": "*/*"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"userId\": 1,\r\n  \"instrumentId\": 64,\r\n  \"side\": \"BUY\",\r\n  \"type\": \"MARKET\",\r\n  \"size\": 1\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:5185/api/orders",
+				"description": "Generated from cURL: curl -X 'POST' \\\r\n  'http://localhost:5185/api/orders' \\\r\n  -H 'accept: */*' \\\r\n  -H 'Content-Type: application/json' \\\r\n  -d '{\r\n  \"userId\": 1,\r\n  \"instrumentId\": 64,\r\n  \"side\": \"BUY\",\r\n  \"type\": \"MARKET\",\r\n  \"size\": 1,\r\n  \"totalAmount\": 10,\r\n  \"price\": 0\r\n}'"
+			},
+			"response": []
+		},
+		{
+			"name": "BUY Limit by total amount",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "accept",
+						"value": "*/*"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"userId\": 1,\r\n  \"instrumentId\": 65,\r\n  \"side\": \"BUY\",\r\n  \"type\": \"LIMIT\",\r\n  \"totalAmount\": 10,\r\n  \"price\": 370\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:5185/api/orders",
+				"description": "Generated from cURL: curl -X 'POST' \\\r\n  'http://localhost:5185/api/orders' \\\r\n  -H 'accept: */*' \\\r\n  -H 'Content-Type: application/json' \\\r\n  -d '{\r\n  \"userId\": 1,\r\n  \"instrumentId\": 65,\r\n  \"side\": \"BUY\",\r\n  \"type\": \"LIMIT\",\r\n  \"totalAmount\": 10,\r\n  \"price\": 370\r\n}'"
+			},
+			"response": []
+		},
+		{
+			"name": "SELL Limit by total amount",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "accept",
+						"value": "*/*"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"userId\": 1,\r\n  \"instrumentId\": 65,\r\n  \"side\": \"SELL\",\r\n  \"type\": \"LIMIT\",\r\n  \"totalAmount\": 10,\r\n  \"price\": 360\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:5185/api/orders",
+				"description": "Generated from cURL: curl -X 'POST' \\\r\n  'http://localhost:5185/api/orders' \\\r\n  -H 'accept: */*' \\\r\n  -H 'Content-Type: application/json' \\\r\n  -d '{\r\n  \"userId\": 1,\r\n  \"instrumentId\": 65,\r\n  \"side\": \"SELL\",\r\n  \"type\": \"LIMIT\",\r\n  \"totalAmount\": 10,\r\n  \"price\": 360\r\n}'"
+			},
+			"response": []
+		},
+		{
+			"name": "SELL Market",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "accept",
+						"value": "*/*"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"userId\": 1,\r\n  \"instrumentId\": 47,\r\n  \"side\": \"SELL\",\r\n  \"type\": \"MARKET\",\r\n  \"size\": 2\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:5185/api/orders",
+				"description": "Generated from cURL: curl -X 'POST' \\\r\n  'http://localhost:5185/api/orders' \\\r\n  -H 'accept: */*' \\\r\n  -H 'Content-Type: application/json' \\\r\n  -d '{\r\n  \"userId\": 1,\r\n  \"instrumentId\": 47,\r\n  \"side\": \"SELL\",\r\n  \"type\": \"MARKET\",\r\n  \"size\": 2\r\n}'"
+			},
+			"response": []
+		}
+	]
+}
